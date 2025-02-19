@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procedural Checklist</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .agent-name {
+      margin-bottom: 20px;
+    }
+    .agent-name label {
+      font-weight: bold;
+      color: #555;
+    }
+    .agent-name input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .task-list {
+      margin-bottom: 20px;
+    }
+    .task {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    .task input {
+      margin-right: 10px;
+    }
+    .task label {
+      flex-grow: 1;
+      font-size: 14px;
+    }
+    .messages textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .email-reminder {
+      margin-top: 20px;
+      font-style: italic;
+      color: #666;
+      text-align: center;
+    }
+    .save-button {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .save-button button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .save-button button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Procedural Checklist</h1>
+
+    <!-- Agent Name Section -->
+    <div class="agent-name">
+      <label for="agent-name">Agent Name:</label>
+      <input type="text" id="agent-name" placeholder="Enter your name">
+    </div>
+
+    <p><strong>Day & Date:</strong> <span id="day-date"></span></p>
+
+    <!-- Task List -->
+    <div class="task-list" id="task-list">
+      <!-- Tasks will be dynamically inserted here -->
+    </div>
+
+    <!-- Messages for Next Shift -->
+    <div class="messages">
+      <label for="next-shift-messages"><strong>Messages for Next Shift:</strong></label>
+      <textarea id="next-shift-messages" placeholder="Leave a message for the next shift..."></textarea>
+    </div>
+
+    <!-- Email Reminder -->
+    <div class="email-reminder">
+      <p>PLEASE CHECK OUTBOX TO MAKE SURE ALL EMAILS HAVE BEEN SENT</p>
+    </div>
+
+    <!-- Save Button -->
+    <div class="save-button">
+      <button onclick="saveChecklist()">Save Checklist</button>
+    </div>
+  </div>
+
+  <!-- Include Supabase Client Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Initialize Supabase with your credentials
+    const supabaseUrl = 'https://nupndjakdqzubvtvduog.supabase.co'; // Your Supabase URL
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cG5kamFrZHF6dWJ2dHZkdW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwMDIwMDcsImV4cCI6MjA1NTU3ODAwN30.f7tPR8ZBXkwo_qJS9x1rpKZYo6GEjOOtUepFGTpP2ao'; // Your Supabase API key
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Data for tasks
+    const tasks = {
+      weekend: [
+        { time: "00:00", task: "Enter/Check bookings in orange folder" },
+        { time: "08:00", task: "Check for duplicate bookings" },
+        { time: "08:30", task: "Email to council Sat-Sun shift supervisor (Douglas SC)" },
+        { time: "08:45", task: "Email to council Sat-Sun shift supervisor (Cook SC)" }
+      ],
+      weekday: [
+        { time: "00:00", task: "Enter/Check bookings in orange folder" },
+        { time: "08:00", task: "Check for duplicate bookings" },
+        { time: "08:30", task: "Email to council Mon-Fri shift supervisor (Douglas SC)" },
+        { time: "08:45", task: "Email to council Mon-Fri shift supervisor (Cook SC)" }
+      ]
+    };
+
+    // Get current day and date
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const dayDateString = today.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Display day and date
+    document.getElementById("day-date").textContent = dayDateString;
+
+    // Display tasks based on day
+    const taskList = document.getElementById("task-list");
+    const currentTasks = isWeekend ? tasks.weekend : tasks.weekday;
+
+    currentTasks.forEach((task, index) => {
+      const taskElement = document.createElement("div");
+      taskElement.className = "task";
+      taskElement.innerHTML = `
+        <input type="checkbox" id="task-${index}" data-time="${task.time}">
+        <label for="task-${index}"><strong>${task.time}</strong> - ${task.task}</label>
+      `;
+      taskList.appendChild(taskElement);
+    });
+
+    // Save checklist data to Supabase
+    async function saveChecklist() {
+      const agentName = document.getElementById("agent-name").value;
+      const messages = document.getElementById("next-shift-messages").value;
+
+      const savedTasks = {};
+      currentTasks.forEach((task, index) => {
+        const taskId = `task-${index}`;
+        const checkbox = document.getElementById(taskId);
+        savedTasks[task.time] = checkbox.checked;
+      });
+
+      const { data, error } = await supabase
+        .from('checklists')
+        .insert([
+          {
+            agent_name: agentName,
+            tasks: savedTasks,
+            messages: messages
+          }
+        ]);
+
+      if (error) {
+        console.error("Error saving checklist:", error);
+        alert("Failed to save checklist. Please try again.");
+      } else {
+        alert("Checklist saved successfully!");
+      }
+    }
+
+    // Load saved data from Supabase
+    async function loadChecklist() {
+      const { data, error } = await supabase
+        .from('checklists')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error("Error loading checklist:", error);
+        return;
+      }
+
+      if (data.length > 0) {
+        const latestChecklist = data[0];
+        document.getElementById("agent-name").value = latestChecklist.agent_name || "";
+        document.getElementById("next-shift-messages").value = latestChecklist.messages || "";
+
+        currentTasks.forEach((task, index) => {
+          const taskId = `task-${index}`;
+          const checkbox = document.getElementById(taskId);
+          if (latestChecklist.tasks && latestChecklist.tasks[task.time]) {
+            checkbox.checked = latestChecklist.tasks[task.time];
+          }
+        });
+      }
+    }
+
+    // Load saved data when the page loads
+    loadChecklist();
+  </script>
+</body>
+</html>
