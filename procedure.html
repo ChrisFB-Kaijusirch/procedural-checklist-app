@@ -6,22 +6,43 @@
   <title>Procedural Checklist</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
       background-color: #f4f4f9;
       color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
     h1 {
       text-align: center;
       color: #555;
+      margin-bottom: 20px;
     }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .agent-name {
+      margin-bottom: 20px;
+    }
+    .agent-name label {
+      font-weight: bold;
+      color: #555;
+    }
+    .agent-name input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
     }
     .task-list {
       margin-bottom: 20px;
@@ -30,9 +51,17 @@
       display: flex;
       align-items: center;
       margin-bottom: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      border: 1px solid #eee;
     }
     .task input {
       margin-right: 10px;
+    }
+    .task label {
+      flex-grow: 1;
+      font-size: 14px;
     }
     .messages textarea {
       width: 100%;
@@ -41,30 +70,63 @@
       border-radius: 4px;
       border: 1px solid #ccc;
       margin-top: 10px;
+      font-size: 14px;
     }
     .email-reminder {
       margin-top: 20px;
       font-style: italic;
       color: #666;
+      text-align: center;
+    }
+    .save-button {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .save-button button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .save-button button:hover {
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Procedural Checklist</h1>
+
+    <!-- Agent Name Section -->
+    <div class="agent-name">
+      <label for="agent-name">Agent Name:</label>
+      <input type="text" id="agent-name" placeholder="Enter your name">
+    </div>
+
     <p><strong>Day & Date:</strong> <span id="day-date"></span></p>
 
+    <!-- Task List -->
     <div class="task-list" id="task-list">
       <!-- Tasks will be dynamically inserted here -->
     </div>
 
+    <!-- Messages for Next Shift -->
     <div class="messages">
       <label for="next-shift-messages"><strong>Messages for Next Shift:</strong></label>
       <textarea id="next-shift-messages" placeholder="Leave a message for the next shift..."></textarea>
     </div>
 
+    <!-- Email Reminder -->
     <div class="email-reminder">
       <p>PLEASE CHECK OUTBOX TO MAKE SURE ALL EMAILS HAVE BEEN SENT</p>
+    </div>
+
+    <!-- Save Button -->
+    <div class="save-button">
+      <button onclick="saveChecklist()">Save Checklist</button>
     </div>
   </div>
 
@@ -98,15 +160,55 @@
     const taskList = document.getElementById("task-list");
     const currentTasks = isWeekend ? tasks.weekend : tasks.weekday;
 
-    currentTasks.forEach(task => {
+    currentTasks.forEach((task, index) => {
       const taskElement = document.createElement("div");
       taskElement.className = "task";
       taskElement.innerHTML = `
-        <input type="checkbox" id="${task.time}">
-        <label for="${task.time}"><strong>${task.time}</strong> - ${task.task}</label>
+        <input type="checkbox" id="task-${index}" data-time="${task.time}">
+        <label for="task-${index}"><strong>${task.time}</strong> - ${task.task}</label>
       `;
       taskList.appendChild(taskElement);
     });
+
+    // Load saved data
+    function loadChecklist() {
+      const savedData = JSON.parse(localStorage.getItem("checklistData")) || {};
+      document.getElementById("agent-name").value = savedData.agentName || "";
+      document.getElementById("next-shift-messages").value = savedData.messages || "";
+
+      currentTasks.forEach((task, index) => {
+        const taskId = `task-${index}`;
+        const checkbox = document.getElementById(taskId);
+        if (savedData.tasks && savedData.tasks[task.time]) {
+          checkbox.checked = savedData.tasks[task.time];
+        }
+      });
+    }
+
+    // Save checklist data
+    function saveChecklist() {
+      const agentName = document.getElementById("agent-name").value;
+      const messages = document.getElementById("next-shift-messages").value;
+
+      const savedTasks = {};
+      currentTasks.forEach((task, index) => {
+        const taskId = `task-${index}`;
+        const checkbox = document.getElementById(taskId);
+        savedTasks[task.time] = checkbox.checked;
+      });
+
+      const checklistData = {
+        agentName,
+        messages,
+        tasks: savedTasks
+      };
+
+      localStorage.setItem("checklistData", JSON.stringify(checklistData));
+      alert("Checklist saved successfully!");
+    }
+
+    // Load saved data when the page loads
+    loadChecklist();
   </script>
 </body>
 </html>
