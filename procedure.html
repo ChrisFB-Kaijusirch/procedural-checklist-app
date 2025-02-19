@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procedural Checklist</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #555;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .task-list {
+      margin-bottom: 20px;
+    }
+    .task {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .task input {
+      margin-right: 10px;
+    }
+    .messages textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+    }
+    .email-reminder {
+      margin-top: 20px;
+      font-style: italic;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Procedural Checklist</h1>
+    <p><strong>Day & Date:</strong> <span id="day-date"></span></p>
+
+    <div class="task-list" id="task-list">
+      <!-- Tasks will be dynamically inserted here -->
+    </div>
+
+    <div class="messages">
+      <label for="next-shift-messages"><strong>Messages for Next Shift:</strong></label>
+      <textarea id="next-shift-messages" placeholder="Leave a message for the next shift..."></textarea>
+    </div>
+
+    <div class="email-reminder">
+      <p>PLEASE CHECK OUTBOX TO MAKE SURE ALL EMAILS HAVE BEEN SENT</p>
+    </div>
+  </div>
+
+  <script>
+    // Data for tasks
+    const tasks = {
+      weekend: [
+        { time: "00:00", task: "Enter/Check bookings in orange folder" },
+        { time: "08:00", task: "Check for duplicate bookings" },
+        { time: "08:30", task: "Email to council Sat-Sun shift supervisor (Douglas SC)" },
+        { time: "08:45", task: "Email to council Sat-Sun shift supervisor (Cook SC)" }
+      ],
+      weekday: [
+        { time: "00:00", task: "Enter/Check bookings in orange folder" },
+        { time: "08:00", task: "Check for duplicate bookings" },
+        { time: "08:30", task: "Email to council Mon-Fri shift supervisor (Douglas SC)" },
+        { time: "08:45", task: "Email to council Mon-Fri shift supervisor (Cook SC)" }
+      ]
+    };
+
+    // Get current day and date
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const dayDateString = today.toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Display day and date
+    document.getElementById("day-date").textContent = dayDateString;
+
+    // Display tasks based on day
+    const taskList = document.getElementById("task-list");
+    const currentTasks = isWeekend ? tasks.weekend : tasks.weekday;
+
+    currentTasks.forEach(task => {
+      const taskElement = document.createElement("div");
+      taskElement.className = "task";
+      taskElement.innerHTML = `
+        <input type="checkbox" id="${task.time}">
+        <label for="${task.time}"><strong>${task.time}</strong> - ${task.task}</label>
+      `;
+      taskList.appendChild(taskElement);
+    });
+  </script>
+</body>
+</html>
