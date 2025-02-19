@@ -130,7 +130,14 @@
     </div>
   </div>
 
+  <!-- Include Supabase Client Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Initialize Supabase with your credentials
+    const supabaseUrl = 'https://nupndjakdqzubvtvduog.supabase.co'; // Your Supabase URL
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cG5kamFrZHF6dWJ2dHZkdW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwMDIwMDcsImV4cCI6MjA1NTU3ODAwN30.f7tPR8ZBXkwo_qJS9x1rpKZYo6GEjOOtUepFGTpP2ao'; // Your Supabase API key
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
     // Data for tasks
     const tasks = {
       weekend: [
@@ -170,23 +177,8 @@
       taskList.appendChild(taskElement);
     });
 
-    // Load saved data
-    function loadChecklist() {
-      const savedData = JSON.parse(localStorage.getItem("checklistData")) || {};
-      document.getElementById("agent-name").value = savedData.agentName || "";
-      document.getElementById("next-shift-messages").value = savedData.messages || "";
-
-      currentTasks.forEach((task, index) => {
-        const taskId = `task-${index}`;
-        const checkbox = document.getElementById(taskId);
-        if (savedData.tasks && savedData.tasks[task.time]) {
-          checkbox.checked = savedData.tasks[task.time];
-        }
-      });
-    }
-
-    // Save checklist data
-    function saveChecklist() {
+    // Save checklist data to Supabase
+    async function saveChecklist() {
       const agentName = document.getElementById("agent-name").value;
       const messages = document.getElementById("next-shift-messages").value;
 
@@ -197,14 +189,50 @@
         savedTasks[task.time] = checkbox.checked;
       });
 
-      const checklistData = {
-        agentName,
-        messages,
-        tasks: savedTasks
-      };
+      const { data, error } = await supabase
+        .from('checklists')
+        .insert([
+          {
+            agent_name: agentName,
+            tasks: savedTasks,
+            messages: messages
+          }
+        ]);
 
-      localStorage.setItem("checklistData", JSON.stringify(checklistData));
-      alert("Checklist saved successfully!");
+      if (error) {
+        console.error("Error saving checklist:", error);
+        alert("Failed to save checklist. Please try again.");
+      } else {
+        alert("Checklist saved successfully!");
+      }
+    }
+
+    // Load saved data from Supabase
+    async function loadChecklist() {
+      const { data, error } = await supabase
+        .from('checklists')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error("Error loading checklist:", error);
+        return;
+      }
+
+      if (data.length > 0) {
+        const latestChecklist = data[0];
+        document.getElementById("agent-name").value = latestChecklist.agent_name || "";
+        document.getElementById("next-shift-messages").value = latestChecklist.messages || "";
+
+        currentTasks.forEach((task, index) => {
+          const taskId = `task-${index}`;
+          const checkbox = document.getElementById(taskId);
+          if (latestChecklist.tasks && latestChecklist.tasks[task.time]) {
+            checkbox.checked = latestChecklist.tasks[task.time];
+          }
+        });
+      }
     }
 
     // Load saved data when the page loads
