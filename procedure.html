@@ -255,34 +255,6 @@
       }
     }
 
-    // Load saved data from Supabase
-    async function loadChecklist() {
-      const { data, error } = await supabase
-        .from('checklists')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (error) {
-        console.error("Error loading checklist:", error);
-        return;
-      }
-
-      if (data.length > 0) {
-        const latestChecklist = data[0];
-        document.getElementById("agent-name").value = latestChecklist.agent_name || "";
-        document.getElementById("next-shift-messages").value = latestChecklist.messages || "";
-
-        currentTasks.forEach((task, index) => {
-          const taskId = `task-${index}`;
-          const checkbox = document.getElementById(taskId);
-          if (latestChecklist.tasks && latestChecklist.tasks[task.time]) {
-            checkbox.checked = latestChecklist.tasks[task.time];
-          }
-        });
-      }
-    }
-
     // View previous records
     async function viewRecords() {
       const recordsList = document.getElementById("records-list");
