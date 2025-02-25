@@ -1,22 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Existing head content remains the same -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procedural Checklist System</title>
+  <link rel="icon" href="data:,">
+  <style>
+    /* Your original styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 2rem;
+      background-color: #f5f7fa;
+      color: #2d3748;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .header-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .category-section {
+      margin-bottom: 2.5rem;
+      padding: 1.5rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      border-left: 4px solid #4299e1;
+    }
+    .category-section.mandatory {
+      border-left-color: #e53e3e;
+      background: #fff5f5;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .category-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-right: 1rem;
+    }
+    .mandatory-badge {
+      background: #e53e3e;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    .add-task-section {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f0f4f8;
+      border-radius: 8px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin: 2rem 0;
+      justify-content: center;
+    }
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .primary-btn {
+      background: #4299e1;
+      color: white;
+    }
+    .secondary-btn {
+      background: #48bb78;
+      color: white;
+    }
+    .danger-btn {
+      background: #e53e3e;
+      color: white;
+    }
+    .records-section {
+      margin-top: 40px;
+      border-top: 2px solid #eee;
+      padding-top: 30px;
+    }
+
+    /* New styles for message box and toast */
+    .message-box {
+      grid-column: 1 / -1;
+      margin-top: 1rem;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      background: #48bb78;
+      color: white;
+      display: none;
+      animation: slideIn 0.3s ease-out;
+    }
+    .toast.error {
+      background: #e53e3e;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <!-- Existing HTML content remains the same -->
+    <h1>Procedural Checklist System</h1>
+    
+    <!-- Header Section -->
+    <div class="header-section">
+      <div>
+        <label><strong>Agent Name:</strong></label>
+        <input type="text" id="agent-name" placeholder="Enter agent name">
+      </div>
+      <div>
+        <label><strong>Select Date:</strong></label>
+        <input type="date" id="selected-date" required>
+      </div>
+      <!-- Added message box for next shift -->
+      <div class="message-box">
+        <label><strong>Message for Next Shift:</strong></label>
+        <textarea id="next-shift-messages" placeholder="Enter detailed message for next shift"></textarea>
+      </div>
+    </div>
+
+    <!-- Mandatory Sections -->
+    <div class="category-section mandatory">
+      <div class="category-header">
+        <h2 class="category-title">Bookings</h2>
+        <span class="mandatory-badge">Required</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="Bookings">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">00:00</div>
+            <div class="task-desc">Enter/Check bookings in orange folder</div>
+          </div>
+        </div>
+        <div class="task-item" data-category="Bookings">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">00:00</div>
+            <div class="task-desc">File completed bookings from all 3 account folders</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-section mandatory">
+      <div class="category-header">
+        <h2 class="category-title">All Hours</h2>
+        <span class="mandatory-badge">Required</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="All Hours">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">08:00</div>
+            <div class="task-desc">Check for duplicate bookings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Department Sections -->
+    <div class="category-section">
+      <div class="category-header">
+        <h2 class="category-title">Douglas SC</h2>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="Douglas SC">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">08:30</div>
+            <div class="task-desc">Email to council Mon-Fri Shift Supervisor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-section">
+      <div class="category-header">
+        <h2 class="category-title">Cook SC</h2>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="Cook SC">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">08:45</div>
+            <div class="task-desc">Email to council Mon-Fri Shift Supervisor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Task Section -->
+    <div class="add-task-section">
+      <h3>Add Custom Task</h3>
+      <div style="display: grid; grid-template-columns: 1fr 2fr auto auto auto; gap: 1rem; align-items: center;">
+        <input type="time" id="new-task-time">
+        <input type="text" id="new-task-desc" placeholder="Task description">
+        <label>
+          <input type="checkbox" id="new-task-mandatory"> Mandatory
+        </label>
+        <select id="new-task-category">
+          <option value="Custom">Custom</option>
+          <option value="Bookings">Bookings</option>
+          <option value="All Hours">All Hours</option>
+          <option value="Douglas SC">Douglas SC</option>
+          <option value="Cook SC">Cook SC</option>
+        </select>
+        <button class="action-btn primary-btn" onclick="addCustomTask()">Add Task</button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="action-btn secondary-btn" onclick="newChecklist()">New Checklist</button>
+      <button class="action-btn primary-btn" onclick="saveChecklist()">Save Checklist</button>
+      <button class="action-btn danger-btn" onclick="viewRecords()">View History</button>
+    </div>
+
+    <!-- Records Section -->
+    <div class="records-section" id="records-list" style="display: none;">
+      <h2>Previous Records</h2>
+      <div id="records-container"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    console.log("Initializing Supabase client...");
     // Initialize Supabase client at the top of the script
     const supabaseUrl = 'https://nupndjakdqzubvtvduog.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cG5kamFrZHF6dWJ2dHZkdW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwMDIwMDcsImV4cCI6MjA1NTU3ODAwN30.f7tPR8ZBXkwo_qJS9x1rpKZYo6GEjOOtUepFGTpP2ao'; // Replace with your actual Supabase key
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cG5kamFrZHF6dWJ2dHZkdW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwMDIwMDcsImV4cCI6MjA1NTU3ODAwN30.f7tPR8ZBXkwo_qJS9x1rpKZYo6GEjOOtUepFGTpP2ao';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    console.log("Supabase client initialized.");
 
     // Toast notification function
     function showToast(message, isError = false) {
+      console.log(`Showing toast: ${message}`);
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.className = `toast ${isError ? 'error' : ''}`;
@@ -28,6 +292,7 @@
 
     // Task Management Functions
     function addCustomTask() {
+      console.log("Adding custom task...");
       const time = document.getElementById('new-task-time').value;
       const desc = document.getElementById('new-task-desc').value;
       const mandatory = document.getElementById('new-task-mandatory').checked;
@@ -60,6 +325,7 @@
 
     // Save Checklist Function
     async function saveChecklist() {
+      console.log("Saving checklist...");
       const agentName = document.getElementById('agent-name').value;
       const selectedDate = document.getElementById('selected-date').value;
 
@@ -99,6 +365,7 @@
 
     // View Records Function
     async function viewRecords() {
+      console.log("Viewing records...");
       try {
         const { data, error } = await supabase
           .from('checklists')
