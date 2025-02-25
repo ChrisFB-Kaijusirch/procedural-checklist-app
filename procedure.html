@@ -25,29 +25,47 @@
       grid-template-columns: 1fr 1fr;
       gap: 2rem;
       margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid #e2e8f0;
     }
-    .checklist-controls {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .task-section {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    .task-card {
+    .category-section {
+      margin-bottom: 2.5rem;
       padding: 1.5rem;
       background: #f8fafc;
       border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      border-left: 4px solid #4299e1;
+    }
+    .category-section.mandatory {
+      border-left-color: #e53e3e;
+      background: #fff5f5;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .category-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-right: 1rem;
+    }
+    .mandatory-badge {
+      background: #e53e3e;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
     }
     .task-item {
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
+      align-items: flex-start;
+      gap: 1rem;
       margin-bottom: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
     }
     .add-task-section {
       margin-top: 2rem;
@@ -55,7 +73,37 @@
       background: #f0f4f8;
       border-radius: 8px;
     }
-    /* ... (remaining CSS styles remain similar to previous version) ... */
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin: 2rem 0;
+      justify-content: center;
+    }
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .primary-btn {
+      background: #4299e1;
+      color: white;
+    }
+    .secondary-btn {
+      background: #48bb78;
+      color: white;
+    }
+    .danger-btn {
+      background: #e53e3e;
+      color: white;
+    }
+    .records-section {
+      margin-top: 40px;
+      border-top: 2px solid #eee;
+      padding-top: 30px;
+    }
   </style>
 </head>
 <body>
@@ -66,192 +114,220 @@
     <div class="header-section">
       <div>
         <label><strong>Agent Name:</strong></label>
-        <input type="text" id="agent-name" class="full-width-input" placeholder="Enter agent name">
+        <input type="text" id="agent-name" placeholder="Enter agent name">
       </div>
-      <div class="date-picker">
+      <div>
         <label><strong>Select Date:</strong></label>
-        <input type="date" id="selected-date" class="full-width-input" required>
+        <input type="date" id="selected-date" required>
       </div>
     </div>
 
-    <!-- Checklist Section -->
-    <div class="task-section" id="task-list">
-      <!-- Dynamic tasks will be inserted here -->
+    <!-- Mandatory Sections -->
+    <div class="category-section mandatory">
+      <div class="category-header">
+        <h2 class="category-title">Bookings</h2>
+        <span class="mandatory-badge">Required</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="Bookings">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">00:00</div>
+            <div class="task-desc">Enter/Check bookings in orange folder</div>
+          </div>
+        </div>
+        <div class="task-item" data-category="Bookings">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">00:00</div>
+            <div class="task-desc">File completed bookings from all 3 account folders</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Add Custom Task Section -->
+    <div class="category-section mandatory">
+      <div class="category-header">
+        <h2 class="category-title">All Hours</h2>
+        <span class="mandatory-badge">Required</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="All Hours">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">08:00</div>
+            <div class="task-desc">Check for duplicate bookings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Department Sections -->
+    <div class="category-section">
+      <div class="category-header">
+        <h2 class="category-title">Douglas SC</h2>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="Douglas SC">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">08:30</div>
+            <div class="task-desc">Email to council Mon-Fri Shift Supervisor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-section">
+      <div class="category-header">
+        <h2 class="category-title">Cook SC</h2>
+      </div>
+      <div class="task-list">
+        <div class="task-item" data-category="Cook SC">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">08:45</div>
+            <div class="task-desc">Email to council Mon-Fri Shift Supervisor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Task Section -->
     <div class="add-task-section">
       <h3>Add Custom Task</h3>
-      <div class="task-controls">
-        <input type="time" id="new-task-time" class="time-input">
-        <input type="text" id="new-task-desc" class="task-desc-input" placeholder="Task description">
-        <button onclick="addCustomTask()" class="add-task-btn">Add Task</button>
+      <div style="display: grid; grid-template-columns: 1fr 2fr auto auto auto; gap: 1rem; align-items: center;">
+        <input type="time" id="new-task-time">
+        <input type="text" id="new-task-desc" placeholder="Task description">
+        <label>
+          <input type="checkbox" id="new-task-mandatory"> Mandatory
+        </label>
+        <select id="new-task-category">
+          <option value="Custom">Custom</option>
+          <option value="Bookings">Bookings</option>
+          <option value="All Hours">All Hours</option>
+          <option value="Douglas SC">Douglas SC</option>
+          <option value="Cook SC">Cook SC</option>
+        </select>
+        <button class="action-btn primary-btn" onclick="addCustomTask()">Add Task</button>
       </div>
-    </div>
-
-    <!-- Messages Section -->
-    <div class="messages-section">
-      <label><strong>Messages for Next Shift:</strong></label>
-      <textarea id="next-shift-messages"></textarea>
     </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <button class="new-btn" onclick="newChecklist()">New Checklist</button>
-      <button class="save-btn" onclick="saveChecklist()">Save Checklist</button>
-      <button class="history-btn" onclick="viewRecords()">View History</button>
+      <button class="action-btn secondary-btn" onclick="newChecklist()">New Checklist</button>
+      <button class="action-btn primary-btn" onclick="saveChecklist()">Save Checklist</button>
+      <button class="action-btn danger-btn" onclick="viewRecords()">View History</button>
     </div>
 
     <!-- Records Section -->
     <div class="records-section" id="records-list" style="display: none;">
       <h2>Previous Records</h2>
+      <div id="records-container"></div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Supabase Initialization
     const supabaseUrl = 'https://nupndjakdqzubvtvduog.supabase.co';
     const supabaseKey = 'YOUR_SUPABASE_KEY';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Enhanced Task Data Structure
-    const baseTasks = {
-      weekday: [
-        { time: "00:00", task: "Enter/Check bookings in orange folder", category: "Bookings" },
-        { time: "00:00", task: "File completed bookings from all 3 account folders", category: "Bookings" },
-        { time: "08:00", task: "Check for duplicate bookings", category: "All Hours" },
-        { time: "08:30", task: "Email to council Mon-Fri shift supervisor (Douglas SC)", category: "Douglas SC" },
-        { time: "08:45", task: "Email to council Mon-Fri shift supervisor (Cook SC)", category: "Cook SC" }
-      ],
-      weekend: [
-        { time: "00:00", task: "Enter/Check bookings in orange folder", category: "Bookings" },
-        { time: "00:00", task: "File completed bookings from all 3 account folders (Sat Only)", category: "Bookings" },
-        { time: "08:00", task: "Check for duplicate bookings", category: "All Hours" },
-        { time: "08:30", task: "Email to council Sat-Sun shift supervisor (Douglas SC)", category: "Douglas SC" },
-        { time: "08:45", task: "Email to council Sat-Sun shift supervisor (Cook SC)", category: "Cook SC" }
-      ]
-    };
-
-    // Initialize Checklist
-    function initializeChecklist() {
-      const dateInput = document.getElementById('selected-date');
-      const selectedDate = new Date(dateInput.value || Date.now());
-      const isWeekend = [0, 6].includes(selectedDate.getDay());
-      
-      const tasks = isWeekend ? baseTasks.weekend : baseTasks.weekday;
-      const taskList = document.getElementById('task-list');
-      
-      taskList.innerHTML = tasks.map((task, index) => `
-        <div class="task-card">
-          <div class="task-item">
-            <input type="checkbox" id="task-${index}" 
-                   data-time="${task.time}" data-category="${task.category}">
-            <div>
-              <div class="task-time">${task.time} - ${task.category}</div>
-              <div class="task-desc">${task.task}</div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Add Custom Task Functionality
+    // Task Management Functions
     function addCustomTask() {
       const time = document.getElementById('new-task-time').value;
       const desc = document.getElementById('new-task-desc').value;
-      
+      const mandatory = document.getElementById('new-task-mandatory').checked;
+      const category = document.getElementById('new-task-category').value;
+
       if (!time || !desc) {
-        alert('Please fill both time and description fields');
+        alert('Please fill required fields');
         return;
       }
 
-      const taskList = document.getElementById('task-list');
-      const taskId = `custom-${Date.now()}`;
-      
-      taskList.innerHTML += `
-        <div class="task-card">
-          <div class="task-item">
-            <input type="checkbox" id="${taskId}" 
-                   data-time="${time}" data-category="Custom Task">
-            <div>
-              <div class="task-time">${time} - Custom Task</div>
-              <div class="task-desc">${desc}</div>
-            </div>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    class="delete-btn">×</button>
+      const categorySection = document.querySelector(`[data-category="${category}"]`) ||
+        createCategorySection(category, mandatory);
+
+      categorySection.querySelector('.task-list').innerHTML += `
+        <div class="task-item ${mandatory ? 'mandatory' : ''}" data-category="${category}">
+          <input type="checkbox">
+          <div class="task-content">
+            <div class="task-time">${time}</div>
+            <div class="task-desc">${desc}</div>
           </div>
+          <button onclick="this.parentElement.remove()">×</button>
         </div>
       `;
 
-      // Clear input fields
+      // Clear inputs
       document.getElementById('new-task-time').value = '';
       document.getElementById('new-task-desc').value = '';
+      document.getElementById('new-task-mandatory').checked = false;
     }
 
-    // Enhanced Save Function
     async function saveChecklist() {
-      const tasks = Array.from(document.querySelectorAll('.task-card input[type="checkbox"]'))
-        .map(checkbox => ({
-          time: checkbox.dataset.time,
-          category: checkbox.dataset.category,
-          task: checkbox.parentElement.querySelector('.task-desc').textContent,
-          completed: checkbox.checked
-        }));
+      const tasks = Array.from(document.querySelectorAll('.task-item')).map(task => ({
+        time: task.querySelector('.task-time').textContent,
+        category: task.dataset.category,
+        description: task.querySelector('.task-desc').textContent,
+        mandatory: task.classList.contains('mandatory'),
+        completed: task.querySelector('input').checked
+      }));
 
       const checklistData = {
-        agent_name: document.getElementById('agent-name').value,
+        agent: document.getElementById('agent-name').value,
         date: document.getElementById('selected-date').value,
         messages: document.getElementById('next-shift-messages').value,
-        tasks: tasks
+        tasks: tasks,
+        created_at: new Date().toISOString()
       };
 
       const { error } = await supabase
         .from('checklists')
         .insert([checklistData]);
 
-      error ? alert('Error saving checklist!') : alert('Checklist saved successfully!');
+      error ? alert('Error saving!') : alert('Saved successfully!');
     }
 
-    // Enhanced Load Function
-    async function loadChecklist() {
-      const { data, error } = await supabase
+    async function viewRecords() {
+      const { data } = await supabase
         .from('checklists')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .order('created_at', { ascending: false });
 
-      if (!error && data.length > 0) {
-        const record = data[0];
-        // Load record data
-        document.getElementById('agent-name').value = record.agent_name;
-        document.getElementById('selected-date').value = record.date;
-        document.getElementById('next-shift-messages').value = record.messages;
-        
-        // Rebuild task list
-        const taskList = document.getElementById('task-list');
-        taskList.innerHTML = record.tasks.map((task, index) => `
-          <div class="task-card">
-            <div class="task-item">
-              <input type="checkbox" id="task-${index}" 
-                     ${task.completed ? 'checked' : ''}
-                     data-time="${task.time}" data-category="${task.category}">
-              <div>
-                <div class="task-time">${task.time} - ${task.category}</div>
-                <div class="task-desc">${task.task}</div>
-              </div>
-              ${task.category === 'Custom Task' ? 
-                '<button onclick="this.parentElement.parentElement.remove()" class="delete-btn">×</button>' : ''}
-            </div>
-          </div>
-        `).join('');
-      }
+      const container = document.getElementById('records-container');
+      container.innerHTML = data.map(record => `
+        <div class="record-item" onclick="loadRecord(${JSON.stringify(record)})">
+          <strong>${record.agent}</strong> - ${new Date(record.created_at).toLocaleDateString()}
+          (${record.tasks.filter(t => t.completed).length}/${record.tasks.length} tasks)
+        </div>
+      `).join('');
+      
+      document.getElementById('records-list').style.display = 'block';
     }
 
-    // Initial Setup
+    function createCategorySection(category, mandatory) {
+      const section = document.createElement('div');
+      section.className = `category-section ${mandatory ? 'mandatory' : ''}`;
+      section.dataset.category = category;
+      section.innerHTML = `
+        <div class="category-header">
+          <h2 class="category-title">${category}</h2>
+          ${mandatory ? '<span class="mandatory-badge">Required</span>' : ''}
+        </div>
+        <div class="task-list"></div>
+      `;
+      document.querySelector('.container').insertBefore(section, document.querySelector('.add-task-section'));
+      return section;
+    }
+
+    // Initialize default categories
+    ['Bookings', 'All Hours', 'Douglas SC', 'Cook SC'].forEach(category => {
+      createCategorySection(category, ['Bookings', 'All Hours'].includes(category));
+    });
+
+    // Set default date
     document.getElementById('selected-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('selected-date').addEventListener('change', initializeChecklist);
-    initializeChecklist();
   </script>
 </body>
 </html>
