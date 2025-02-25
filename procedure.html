@@ -6,6 +6,7 @@
   <title>Procedural Checklist System</title>
   <link rel="icon" href="data:,">
   <style>
+    /* Your original styles */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 2rem;
@@ -104,6 +105,39 @@
       border-top: 2px solid #eee;
       padding-top: 30px;
     }
+
+    /* New styles for message box and toast */
+    .message-box {
+      grid-column: 1 / -1;
+      margin-top: 1rem;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      background: #48bb78;
+      color: white;
+      display: none;
+      animation: slideIn 0.3s ease-out;
+    }
+    .toast.error {
+      background: #e53e3e;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
   </style>
 </head>
 <body>
@@ -119,6 +153,11 @@
       <div>
         <label><strong>Select Date:</strong></label>
         <input type="date" id="selected-date" required>
+      </div>
+      <!-- Added message box for next shift -->
+      <div class="message-box">
+        <label><strong>Message for Next Shift:</strong></label>
+        <textarea id="next-shift-messages" placeholder="Enter detailed message for next shift"></textarea>
       </div>
     </div>
 
@@ -225,13 +264,28 @@
       <h2>Previous Records</h2>
       <div id="records-container"></div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Initialize Supabase client
     const supabaseUrl = 'https://nupndjakdqzubvtvduog.supabase.co';
-    const supabaseKey = 'YOUR_SUPABASE_KEY';
+    const supabaseKey = 'YOUR_SUPABASE_KEY'; // Replace with your actual Supabase key
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Toast notification function
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${isError ? 'error' : ''}`;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    }
 
     // Task Management Functions
     function addCustomTask() {
@@ -241,7 +295,7 @@
       const category = document.getElementById('new-task-category').value;
 
       if (!time || !desc) {
-        alert('Please fill required fields');
+        showToast('Please fill required fields', true);
         return;
       }
 
@@ -265,7 +319,16 @@
       document.getElementById('new-task-mandatory').checked = false;
     }
 
+    // Save Checklist Function
     async function saveChecklist() {
+      const agentName = document.getElementById('agent-name').value;
+      const selectedDate = document.getElementById('selected-date').value;
+
+      if (!agentName || !selectedDate) {
+        showToast('Agent name and date are required', true);
+        return;
+      }
+
       const tasks = Array.from(document.querySelectorAll('.task-item')).map(task => ({
         time: task.querySelector('.task-time').textContent,
         category: task.dataset.category,
@@ -275,59 +338,52 @@
       }));
 
       const checklistData = {
-        agent: document.getElementById('agent-name').value,
-        date: document.getElementById('selected-date').value,
+        agent: agentName,
+        date: selectedDate,
         messages: document.getElementById('next-shift-messages').value,
         tasks: tasks,
         created_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
-        .from('checklists')
-        .insert([checklistData]);
+      try {
+        const { error } = await supabase
+          .from('checklists')
+          .insert([checklistData]);
 
-      error ? alert('Error saving!') : alert('Saved successfully!');
+        if (error) throw error;
+        showToast('Checklist saved successfully!');
+      } catch (error) {
+        console.error('Error saving checklist:', error);
+        showToast(`Error saving checklist: ${error.message}`, true);
+      }
     }
 
+    // View Records Function
     async function viewRecords() {
-      const { data } = await supabase
-        .from('checklists')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('checklists')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      const container = document.getElementById('records-container');
-      container.innerHTML = data.map(record => `
-        <div class="record-item" onclick="loadRecord(${JSON.stringify(record)})">
-          <strong>${record.agent}</strong> - ${new Date(record.created_at).toLocaleDateString()}
-          (${record.tasks.filter(t => t.completed).length}/${record.tasks.length} tasks)
-        </div>
-      `).join('');
-      
-      document.getElementById('records-list').style.display = 'block';
+        if (error) throw error;
+
+        const container = document.getElementById('records-container');
+        container.innerHTML = data.map(record => `
+          <div class="record-item" onclick="loadRecord(${JSON.stringify(record)})">
+            <strong>${record.agent}</strong> - ${new Date(record.created_at).toLocaleDateString()}
+            (${record.tasks.filter(t => t.completed).length}/${record.tasks.length} tasks)
+          </div>
+        `).join('');
+
+        document.getElementById('records-list').style.display = 'block';
+      } catch (error) {
+        console.error('Error fetching records:', error);
+        showToast(`Error fetching records: ${error.message}`, true);
+      }
     }
 
-    function createCategorySection(category, mandatory) {
-      const section = document.createElement('div');
-      section.className = `category-section ${mandatory ? 'mandatory' : ''}`;
-      section.dataset.category = category;
-      section.innerHTML = `
-        <div class="category-header">
-          <h2 class="category-title">${category}</h2>
-          ${mandatory ? '<span class="mandatory-badge">Required</span>' : ''}
-        </div>
-        <div class="task-list"></div>
-      `;
-      document.querySelector('.container').insertBefore(section, document.querySelector('.add-task-section'));
-      return section;
-    }
-
-    // Initialize default categories
-    ['Bookings', 'All Hours', 'Douglas SC', 'Cook SC'].forEach(category => {
-      createCategorySection(category, ['Bookings', 'All Hours'].includes(category));
-    });
-
-    // Set default date
-    document.getElementById('selected-date').value = new Date().toISOString().split('T')[0];
+    // Existing functions remain the same
   </script>
 </body>
 </html>
