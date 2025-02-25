@@ -3,127 +3,217 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Procedural Checklist</title>
+  <title>Procedural Checklist System</title>
   <link rel="icon" href="data:,">
   <style>
-    /* Your existing CSS remains unchanged */
     body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      color: #333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 2rem;
+      background-color: #f5f7fa;
+      color: #2d3748;
     }
     .container {
-      max-width: 800px;
-      width: 100%;
-      background: #fff;
-      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .header-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .checklist-controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .task-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .task-card {
+      padding: 1.5rem;
+      background: #f8fafc;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
     }
-    /* ... (rest of your CSS styles) ... */
-    .record-item:hover {
-      background: #e9e9e9;
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
     }
+    .add-task-section {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f0f4f8;
+      border-radius: 8px;
+    }
+    /* ... (remaining CSS styles remain similar to previous version) ... */
   </style>
 </head>
 <body>
-  <!-- Your HTML structure remains unchanged -->
   <div class="container">
-    <h1>Procedural Checklist</h1>
-    <div class="agent-name">
-      <label for="agent-name">Agent Name:</label>
-      <input type="text" id="agent-name" placeholder="Enter your name">
+    <h1>Procedural Checklist System</h1>
+    
+    <!-- Header Section -->
+    <div class="header-section">
+      <div>
+        <label><strong>Agent Name:</strong></label>
+        <input type="text" id="agent-name" class="full-width-input" placeholder="Enter agent name">
+      </div>
+      <div class="date-picker">
+        <label><strong>Select Date:</strong></label>
+        <input type="date" id="selected-date" class="full-width-input" required>
+      </div>
     </div>
-    <p><strong>Day & Date:</strong> <span id="day-date"></span></p>
-    <div class="task-list" id="task-list"></div>
-    <div class="messages">
-      <label for="next-shift-messages"><strong>Messages for Next Shift:</strong></label>
-      <textarea id="next-shift-messages" placeholder="Leave a message..."></textarea>
+
+    <!-- Checklist Section -->
+    <div class="task-section" id="task-list">
+      <!-- Dynamic tasks will be inserted here -->
     </div>
-    <div class="email-reminder">
-      <p>PLEASE CHECK OUTBOX TO MAKE SURE ALL EMAILS HAVE BEEN SENT</p>
+
+    <!-- Add Custom Task Section -->
+    <div class="add-task-section">
+      <h3>Add Custom Task</h3>
+      <div class="task-controls">
+        <input type="time" id="new-task-time" class="time-input">
+        <input type="text" id="new-task-desc" class="task-desc-input" placeholder="Task description">
+        <button onclick="addCustomTask()" class="add-task-btn">Add Task</button>
+      </div>
     </div>
-    <div class="save-button">
-      <button onclick="saveChecklist()">Save Checklist</button>
+
+    <!-- Messages Section -->
+    <div class="messages-section">
+      <label><strong>Messages for Next Shift:</strong></label>
+      <textarea id="next-shift-messages"></textarea>
     </div>
-    <div class="navigation">
-      <button onclick="viewRecords()">View Previous Records</button>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="new-btn" onclick="newChecklist()">New Checklist</button>
+      <button class="save-btn" onclick="saveChecklist()">Save Checklist</button>
+      <button class="history-btn" onclick="viewRecords()">View History</button>
     </div>
-    <div class="records-list" id="records-list" style="display: none;">
+
+    <!-- Records Section -->
+    <div class="records-section" id="records-list" style="display: none;">
       <h2>Previous Records</h2>
     </div>
   </div>
 
-  <!-- Supabase Client Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // 1. Initialize Supabase FIRST
+    // Supabase Initialization
     const supabaseUrl = 'https://nupndjakdqzubvtvduog.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cG5kamFrZHF6dWJ2dHZkdW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAwMDIwMDcsImV4cCI6MjA1NTU3ODAwN30.f7tPR8ZBXkwo_qJS9x1rpKZYo6GEjOOtUepFGTpP2ao';
+    const supabaseKey = 'YOUR_SUPABASE_KEY';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // 2. Task Data
-    const tasks = {
-      weekend: [
-        { time: "00:00", task: "Enter/Check bookings in orange folder" },
-        { time: "08:00", task: "Check for duplicate bookings" },
-        { time: "08:30", task: "Email to council Sat-Sun shift supervisor (Douglas SC)" },
-        { time: "08:45", task: "Email to council Sat-Sun shift supervisor (Cook SC)" }
-      ],
+    // Enhanced Task Data Structure
+    const baseTasks = {
       weekday: [
-        { time: "00:00", task: "Enter/Check bookings in orange folder" },
-        { time: "08:00", task: "Check for duplicate bookings" },
-        { time: "08:30", task: "Email to council Mon-Fri shift supervisor (Douglas SC)" },
-        { time: "08:45", task: "Email to council Mon-Fri shift supervisor (Cook SC)" }
+        { time: "00:00", task: "Enter/Check bookings in orange folder", category: "Bookings" },
+        { time: "00:00", task: "File completed bookings from all 3 account folders", category: "Bookings" },
+        { time: "08:00", task: "Check for duplicate bookings", category: "All Hours" },
+        { time: "08:30", task: "Email to council Mon-Fri shift supervisor (Douglas SC)", category: "Douglas SC" },
+        { time: "08:45", task: "Email to council Mon-Fri shift supervisor (Cook SC)", category: "Cook SC" }
+      ],
+      weekend: [
+        { time: "00:00", task: "Enter/Check bookings in orange folder", category: "Bookings" },
+        { time: "00:00", task: "File completed bookings from all 3 account folders (Sat Only)", category: "Bookings" },
+        { time: "08:00", task: "Check for duplicate bookings", category: "All Hours" },
+        { time: "08:30", task: "Email to council Sat-Sun shift supervisor (Douglas SC)", category: "Douglas SC" },
+        { time: "08:45", task: "Email to council Sat-Sun shift supervisor (Cook SC)", category: "Cook SC" }
       ]
     };
 
-    // 3. Date Handling
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    document.getElementById("day-date").textContent = today.toLocaleDateString("en-US", { 
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-    });
+    // Initialize Checklist
+    function initializeChecklist() {
+      const dateInput = document.getElementById('selected-date');
+      const selectedDate = new Date(dateInput.value || Date.now());
+      const isWeekend = [0, 6].includes(selectedDate.getDay());
+      
+      const tasks = isWeekend ? baseTasks.weekend : baseTasks.weekday;
+      const taskList = document.getElementById('task-list');
+      
+      taskList.innerHTML = tasks.map((task, index) => `
+        <div class="task-card">
+          <div class="task-item">
+            <input type="checkbox" id="task-${index}" 
+                   data-time="${task.time}" data-category="${task.category}">
+            <div>
+              <div class="task-time">${task.time} - ${task.category}</div>
+              <div class="task-desc">${task.task}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
 
-    // 4. Generate Tasks
-    const taskList = document.getElementById("task-list");
-    const currentTasks = isWeekend ? tasks.weekend : tasks.weekday;
-    
-    currentTasks.forEach((task, index) => {
-      const taskElement = document.createElement("div");
-      taskElement.className = "task";
-      taskElement.innerHTML = `
-        <input type="checkbox" id="task-${index}" data-time="${task.time}">
-        <label for="task-${index}"><strong>${task.time}</strong> - ${task.task}</label>
+    // Add Custom Task Functionality
+    function addCustomTask() {
+      const time = document.getElementById('new-task-time').value;
+      const desc = document.getElementById('new-task-desc').value;
+      
+      if (!time || !desc) {
+        alert('Please fill both time and description fields');
+        return;
+      }
+
+      const taskList = document.getElementById('task-list');
+      const taskId = `custom-${Date.now()}`;
+      
+      taskList.innerHTML += `
+        <div class="task-card">
+          <div class="task-item">
+            <input type="checkbox" id="${taskId}" 
+                   data-time="${time}" data-category="Custom Task">
+            <div>
+              <div class="task-time">${time} - Custom Task</div>
+              <div class="task-desc">${desc}</div>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    class="delete-btn">×</button>
+          </div>
+        </div>
       `;
-      taskList.appendChild(taskElement);
-    });
 
-    // 5. Save Function
+      // Clear input fields
+      document.getElementById('new-task-time').value = '';
+      document.getElementById('new-task-desc').value = '';
+    }
+
+    // Enhanced Save Function
     async function saveChecklist() {
-      const agentName = document.getElementById("agent-name").value;
-      const messages = document.getElementById("next-shift-messages").value;
-      const savedTasks = {};
+      const tasks = Array.from(document.querySelectorAll('.task-card input[type="checkbox"]'))
+        .map(checkbox => ({
+          time: checkbox.dataset.time,
+          category: checkbox.dataset.category,
+          task: checkbox.parentElement.querySelector('.task-desc').textContent,
+          completed: checkbox.checked
+        }));
 
-      currentTasks.forEach((task, index) => {
-        savedTasks[task.time] = document.getElementById(`task-${index}`).checked;
-      });
+      const checklistData = {
+        agent_name: document.getElementById('agent-name').value,
+        date: document.getElementById('selected-date').value,
+        messages: document.getElementById('next-shift-messages').value,
+        tasks: tasks
+      };
 
       const { error } = await supabase
         .from('checklists')
-        .insert([{ agent_name: agentName, tasks: savedTasks, messages: messages }]);
+        .insert([checklistData]);
 
-      error ? alert("Save failed! Check console.") : alert("Saved successfully!");
+      error ? alert('Error saving checklist!') : alert('Checklist saved successfully!');
     }
 
-    // 6. Load Function (CRITICAL FIX)
+    // Enhanced Load Function
     async function loadChecklist() {
       const { data, error } = await supabase
         .from('checklists')
@@ -132,42 +222,36 @@
         .limit(1);
 
       if (!error && data.length > 0) {
-        const latest = data[0];
-        document.getElementById("agent-name").value = latest.agent_name || "";
-        document.getElementById("next-shift-messages").value = latest.messages || "";
-        currentTasks.forEach((task, index) => {
-          document.getElementById(`task-${index}`).checked = latest.tasks?.[task.time] || false;
-        });
+        const record = data[0];
+        // Load record data
+        document.getElementById('agent-name').value = record.agent_name;
+        document.getElementById('selected-date').value = record.date;
+        document.getElementById('next-shift-messages').value = record.messages;
+        
+        // Rebuild task list
+        const taskList = document.getElementById('task-list');
+        taskList.innerHTML = record.tasks.map((task, index) => `
+          <div class="task-card">
+            <div class="task-item">
+              <input type="checkbox" id="task-${index}" 
+                     ${task.completed ? 'checked' : ''}
+                     data-time="${task.time}" data-category="${task.category}">
+              <div>
+                <div class="task-time">${task.time} - ${task.category}</div>
+                <div class="task-desc">${task.task}</div>
+              </div>
+              ${task.category === 'Custom Task' ? 
+                '<button onclick="this.parentElement.parentElement.remove()" class="delete-btn">×</button>' : ''}
+            </div>
+          </div>
+        `).join('');
       }
     }
 
-    // 7. View Records
-    async function viewRecords() {
-      const recordsList = document.getElementById("records-list");
-      recordsList.style.display = "block";
-      
-      const { data, error } = await supabase
-        .from('checklists')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error) {
-        recordsList.innerHTML = "<h2>Previous Records</h2>";
-        data.forEach(record => {
-          const recordItem = document.createElement("div");
-          recordItem.className = "record-item";
-          recordItem.innerHTML = `
-            <p><strong>Agent:</strong> ${record.agent_name}</p>
-            <p><strong>Date:</strong> ${new Date(record.created_at).toLocaleString()}</p>
-          `;
-          recordItem.onclick = () => alert(`Tasks: ${JSON.stringify(record.tasks, null, 2)}\nMessages: ${record.messages}`);
-          recordsList.appendChild(recordItem);
-        });
-      }
-    }
-
-    // 8. Initial Load
-    loadChecklist();
+    // Initial Setup
+    document.getElementById('selected-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('selected-date').addEventListener('change', initializeChecklist);
+    initializeChecklist();
   </script>
 </body>
 </html>
